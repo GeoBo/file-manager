@@ -1,3 +1,6 @@
+import { stdout } from 'process';
+import { colorize } from "./view.mjs";
+
 function getArgFromKey(flag) {
 
   const args = process.argv;
@@ -12,4 +15,14 @@ function getArgFromKey(flag) {
   return null; 
 }
 
-export { getArgFromKey };
+
+function checkArgsCount(args, count) {
+  if(args.length !== count) {
+    stdout.write(colorize(91, 'Invalid input'));
+    return false;
+  }
+  return true;
+}
+
+
+export { getArgFromKey, checkArgsCount };

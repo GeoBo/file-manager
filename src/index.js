@@ -1,26 +1,64 @@
-import fs from "fs";
+import { realpath } from "fs/promises";
 import path from "path"
-import { stdin, stdout } from 'process';
+import os from "os";
+import { stdin, stdout, cwd } from 'process';
+import { getArgFromKey, checkArgsCount } from "./lib/argsOperations.mjs";
+import { colorize } from "./lib/view.mjs";
 
-import { getArgFromKey } from "./lib/argsOperations.mjs";
 
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-// stdin.pipe(reverseText).pipe(stdout);
+const userName = getArgFromKey('--username') || 'Mr. Smith';
 
-//stdin.pipe(stdout);
+stdout.write(`Welcome to the File Manager, ${userName}!\n`);
 
-const userName = getArgFromKey('--username');
+process.chdir(os.homedir());
+stdout.write(`You are currently in ${cwd()}>`);
 
-console.log(`Welcome to the File Manager, ${userName}!`);
+stdin.setEncoding("utf-8");
 
-stdin.on('data', data => {
-  if (data.toString().trim() == '.exit') process.exit();
-  stdout.write(data);
+stdin.on('data', async (data) => {
+  const command = data.trim();
+  if (command == '.exit') process.exit();
+  await parseUserInput(command)
+  //stdout.write(data);
+  stdout.write(`\nYou are currently in ${cwd()}>`);
 });
 
 process.on('SIGINT', () => process.exit());
-process.on('exit', () => console.log(`Thank you for using File Manager, ${userName}, goodbye!`));
+process.on('exit', () => console.log(`\nThank you for using File Manager, ${userName}, goodbye!`));
 
+async function parseUserInput(data) {
+  stdout.write(data, data.split(' '));
+  const command = data.split(' ')[0];
+  const args = data.split(' ').slice(1);
+  stdout.write(command, args);
 
+  switch(command) {
+    case 'up': upWorkDir(args);
+      break;
+    case 'cd': await setWorkDir(args);
+      break;
+    default:  stdout.write(colorize(91, 'Invalid input'));
+  }
+}
+
+function upWorkDir(args) {
+  if(!checkArgsCount(args, 0)) return;
+  process.chdir(path.dirname(cwd()));
+}
+
+async function setWorkDir(args) {
+  if(!checkArgsCount(args, 1)) return;
+  
+  const pathNoSpaces = args.toString().replace(/(\s+)/g, '\\$1');
+  
+  //stdout.write(args);
+  const newPath = path.resolve(pathNoSpaces);
+
+  try {
+    const newRealPath = await realpath(newPath);
+    process.chdir(newRealPath);
+  } catch(e) {
+    stdout.write(colorize(91, 'Operation failed'));
+  } 
+}
