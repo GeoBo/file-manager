@@ -9,9 +9,9 @@ import { getDirContent, readStreamFile, createEmptyFile, renameUserFile,
 import { truncateString, sortFiles, getEOLSymbol, 
   showCPUS, printGreenText, printRedText } from "./lib/view.mjs";
 
-//process.chdir(os.homedir());
+process.chdir(os.homedir());
 
-process.chdir('D:\\');
+//process.chdir('D:\\'); //test folder
 
 const userName = getArgFromKey('--username') || 'Mr. Smith';
 stdout.write(`Welcome to the File Manager, ${userName}!\n`);
