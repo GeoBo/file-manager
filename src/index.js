@@ -2,16 +2,19 @@ import { realpath } from "fs/promises";
 import path from "path"
 import os, { EOL } from "os";
 import { stdin, stdout, cwd } from 'process';
-import { getArgFromKey, checkArgsCount, parseInput } from "./lib/argsOperations.mjs";
+import { getArgFromKey, checkArgsCount} from "./lib/argsOperations.mjs";
+import parseInput from './lib/parseInput.mjs'
 import { getDirContent, readStreamFile, createEmptyFile, renameUserFile, 
   copyUserFile, removeUserFile, moveUserFile, getFileHash, 
   brotliFileCompress, brotliFileDecompress } from "./lib/fsOperations.mjs";
-import { truncateString, sortFiles, getEOLSymbol, 
-  showCPUS, printGreenText, printRedText } from "./lib/view.mjs";
+import { truncateString, printGreenText, printRedText } from "./lib/view.mjs";
+import showCPUS from './lib/showCPUS.mjs';
+import sortFiles from './lib/sortFiles.mjs';
+import getEOLSymbol from './lib/getEOLSymbol.mjs';
 
 process.chdir(os.homedir());
 
-//process.chdir('D:\\'); //test folder
+// process.chdir('D:\\'); //test folder
 
 const userName = getArgFromKey('--username') || 'Mr. Smith';
 stdout.write(`Welcome to the File Manager, ${userName}!\n`);
@@ -66,6 +69,25 @@ async function parseUserInput(data) {
   }
 }
 
+function getSystemInfo(args) {
+  if(!checkArgsCount(args, 1)) return;
+  const cmd = args[0].slice(2);
+
+  switch(cmd) {
+    case 'EOL': printGreenText(getEOLSymbol());
+      break;
+    case 'cpus': showCPUS();
+      break;
+    case 'homedir': printGreenText(os.homedir());
+      break;
+    case 'username': printGreenText(os.userInfo().username);
+      break;
+    case 'architecture': printGreenText(os.arch());
+      break;
+    default: printRedText('Invalid input');
+  }
+}
+
 async function compressFile(args) {
   if(!checkArgsCount(args, 2)) return;
   const pathToFile = path.resolve(args[0]);
@@ -85,25 +107,6 @@ async function getHash(args) {
   const pathToFile = path.resolve(args[0]);
   const hash = await getFileHash(pathToFile);
   printGreenText(hash);
-}
-
-function getSystemInfo(args) {
-  if(!checkArgsCount(args, 1)) return;
-  const cmd = args[0].slice(2);
-
-  switch(cmd) {
-    case 'EOL': printGreenText(getEOLSymbol());
-      break;
-    case 'cpus': showCPUS();
-      break;
-    case 'homedir': printGreenText(os.homedir());
-      break;
-    case 'username': printGreenText(os.userInfo().username);
-      break;
-    case 'architecture': printGreenText(os.arch());
-      break;
-    default: printRedText('Invalid input');
-  }
 }
 
 async function removeFile(args) {
@@ -165,7 +168,6 @@ async function setWorkDir(args) {
   if(!checkArgsCount(args, 1)) return;
   
   const newPath = path.resolve(args[0]);
-
   try {
     const newRealPath = await realpath(newPath);
     process.chdir(newRealPath);

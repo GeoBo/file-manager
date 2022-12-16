@@ -15,7 +15,6 @@ function getArgFromKey(flag) {
   return null; 
 }
 
-
 function checkArgsCount(args, count) {
   if(args.length !== count) {
     stdout.write(colorize(91, 'Invalid input'));
@@ -24,21 +23,4 @@ function checkArgsCount(args, count) {
   return true;
 }
 
-
-function parseInput(myString) {
-  const myRegexp = /[^\s"]+|"([^"]*)"/gi;
-  const myArray = [];
-  let match;
-
-  do {
-      match = myRegexp.exec(myString);
-      if (match != null)
-      {
-          myArray.push(match[1] ? match[1] : match[0]);
-      }
-  } while (match != null);
-  return myArray;
-}
-
-
-export { getArgFromKey, checkArgsCount, parseInput };
+export { getArgFromKey, checkArgsCount };
